@@ -28,13 +28,19 @@ Note that variables/functions/acronyms are checked after multiplication/commas t
 
 ### Example
 Given the following list:
+
 ab f
+
 cde v
+
 cdef m
 
 This will be sorted to
+
 cdef m
+
 cde v
+
 ab f
 
 1. &it will be inserted between all <mi> tags that consecutive contain c, then d, then e, then f.

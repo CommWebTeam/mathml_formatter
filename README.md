@@ -29,19 +29,19 @@ Note that variables/functions/acronyms are checked after multiplication/commas t
 ### Example
 Given the following list:
 
-*ab f
+*ab f*
 
-cde v
+*cde v*
 
-cdef m*
+*cdef m*
 
 This will be sorted into
 
-*cdef m
+*cdef m*
 
-cde v
+*cde v*
 
-ab f*
+*ab f*
 
 1. &it will be inserted between all <mi> tags that consecutive contain c, then d, then e, then f.
 2. All consecutive mi tags containing c, then d, then e (including those that have &it between) are joined into <mi>cde</mi>. 

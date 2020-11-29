@@ -4,29 +4,30 @@
 <script src="https://commwebteam.github.io/util/str_format_helpers.js"></script> 
 <script>
 // general regex
-mi_open = '<m[ion]( *[a-z]+ *= *"[-# a-z]+")*>'
-mi_open_nattr = '<m[ion](?: *[a-z]+ *= *"[-# a-z]+")*>'
-mo_invis = '(<mo>&#x206[0-9];</mo>)*'
-mo_invis_nattr = '(?:<mo>&#x206[0-9];</mo>)*'
-mi_close = '</m[ion]>'
-space = '[\s \t\r\n]*'
+const mi_open = '<m[ion]( *[a-z]+ *= *"[-# a-z]+")*>';
+const mi_open_nattr = '<m[ion](?: *[a-z]+ *= *"[-# a-z]+")*>';
+const mo_invis = '(<mo>&#x206[0-9];</mo>)*';
+const mo_invis_nattr = '(?:<mo>&#x206[0-9];</mo>)*';
+const mi_close = '</m[ion]>';
+const space = '[\s \t\r\n]*';
+const special_regex = /&[#a-zA-Z0-9]+;/g
 
 // assign type priorities
 function type_prio(x) {
 	if (x.type == "m") {
-		return 0
+		return 0;
 	}
 	if (x.type == "c") {
-		return 0
+		return 0;
 	}
 	if (x.type == "a") {
-		return 1
+		return 1;
 	}
 	if (x.type == "v") {
-		return 1
+		return 1;
 	}
 	if (x.type == "f") {
-		return 1
+		return 1;
 	}
 }
 
@@ -34,117 +35,116 @@ function type_prio(x) {
 function sort_words(a, b) {
 	// if two words are treated the same, sort by length in reverse
 	if (type_prio(a) == type_prio(b)) {
-		return a.val.length - b.val.length
+		return a.val.length - b.val.length;
 	}
-	return type_prio(b) - type_prio(a)
+	return type_prio(b) - type_prio(a);
 }
 
 // join consecutive mi into *
 function join_mi_star(mathml_text) {
-	mi_star_regex = new RegExp(mi_close + mo_invis + space + mi_open + '\*' + mi_close, "g")
-	return mathml_text.replaceAll(mi_star_regex, "*</mi>")
+	let mi_star_regex = new RegExp(mi_close + mo_invis + space + mi_open + '\*' + mi_close, "g");
+	return mathml_text.replaceAll(mi_star_regex, "*</mi>");
 }
 
 // join consecutive mi for words in list
 function join_multichar_mi(mathml_text, multichar_list) {
-	multichar_mathml_text = mathml_text
+	let multichar_mathml_text = mathml_text;
 	// get list of objects containing word value and type of word
-	word_arr = []
+	let word_arr = [];
 	for (i = 0; i < multichar_list.length; i++) {
-		multichar_word = multichar_list[i].trim()
+		let multichar_word = multichar_list[i].trim();
 		if (multichar_word.length > 2) {
-			multichar_val = multichar_word.substring(0, multichar_word.length - 2).trim()
-			multichar_type = multichar_word.substring(multichar_word.length - 1, multichar_word.length)
-			word_arr.push({val: multichar_val, type: multichar_type})
+			let multichar_val = multichar_word.substring(0, multichar_word.length - 2).trim();
+			let multichar_type = multichar_word.substring(multichar_word.length - 1, multichar_word.length);
+			word_arr.push({val: multichar_val, type: multichar_type});
 		}
 	}
 	// sort list of words by what to do with them
-	word_arr.sort(sort_words).reverse()
+	word_arr.sort(sort_words).reverse();
 	// loop through each word
 	for (i = 0; i < word_arr.length; i++) {
-		curr_word = word_arr[i]
-		console.log(curr_word)
+		let curr_word = word_arr[i];
 		// get values and indices of entities
-		special_regex = /&[#a-zA-Z0-9]+;/g
-		special_char_vals = curr_word.val.match(special_regex)
+		
+		let special_char_vals = curr_word.val.match(special_regex);
 		if (special_char_vals == null) {
-			special_char_vals = []
+			special_char_vals = [];
 		}
 		// loop through entities one by one and get their indices
-		curr_word_no_special = curr_word.val
-		special_char_inds = []
+		let curr_word_no_special = curr_word.val
+		let special_char_inds = []
 		for (j = 0; j < special_char_vals.length; j++) {
-			curr_special_val = special_char_vals[j]
-			special_val_ind = curr_word_no_special.indexOf(curr_special_val)
-			special_char_inds.push(special_val_ind)
-			curr_word_no_special = curr_word_no_special.replace(curr_special_val, " ")
+			let curr_special_val = special_char_vals[j];
+			let special_val_ind = curr_word_no_special.indexOf(curr_special_val);
+			special_char_inds.push(special_val_ind);
+			curr_word_no_special = curr_word_no_special.replace(curr_special_val, " ");
 		}
 		// split word up to individual characters and add entities back in
-		multichar_arr = curr_word_no_special.split("")
+		let multichar_arr = curr_word_no_special.split("");
 		for (j = 0; j < special_char_inds.length; j++) {
-			curr_ind = special_char_inds[j]
-			curr_val = special_char_vals[j]
-			multichar_arr[curr_ind] = curr_val
+			let curr_ind = special_char_inds[j];
+			let curr_val = special_char_vals[j];
+			multichar_arr[curr_ind] = curr_val;
 		}
 		// escape regex characters
 		for (j = 0; j < multichar_arr.length; j++) {
-			multichar_arr[j] = replace_regex_chars(multichar_arr[j])
+			multichar_arr[j] = replace_regex_chars(multichar_arr[j]);
 		}
 		// join characters with regex for <mi> and invisible tags to find instances
-		mi_split_str = "(?:" + mi_close + mo_invis_nattr + space + mi_open_nattr + ")*"
-		mi_regex = new RegExp(mi_open + multichar_arr.join(mi_split_str) + mi_close, "g")
+		let mi_split_str = "(?:" + mi_close + mo_invis_nattr + space + mi_open_nattr + ")*";
+		let mi_regex = new RegExp(mi_open + multichar_arr.join(mi_split_str) + mi_close, "g");
 		// for multi-char, also look for instances where the last character contains a superscript/subscript
-		main_char_regex = mi_open + multichar_arr.slice(0, multichar_arr.length - 1).join(mi_split_str)
-		last_char_regex = mi_close + space + '(<msubsup>)' + space + '<mrow>' + space + mi_open_nattr + multichar_arr[multichar_arr.length - 1] + mi_close + space + '</mrow>'
-		mi_script_regex = new RegExp(main_char_regex + last_char_regex, "g")
+		let main_char_regex = mi_open + multichar_arr.slice(0, multichar_arr.length - 1).join(mi_split_str);
+		let last_char_regex = mi_close + space + '(<msubsup>)' + space + '<mrow>' + space + mi_open_nattr + multichar_arr[multichar_arr.length - 1] + mi_close + space + '</mrow>';
+		let mi_script_regex = new RegExp(main_char_regex + last_char_regex, "g");
 		// set replacement values for multi-char
-		mi_replace = "<mi$1>" + curr_word.val + "</mi>"
-		mi_script_replace = "$2<mrow>" + mi_replace + "</mrow>"
+		let mi_replace = "<mi$1>" + curr_word.val + "</mi>";
+		let mi_script_replace = "$2<mrow>" + mi_replace + "</mrow>";
 		// multiplication
 		if (curr_word.type == "m") {
 			// add invisible multiplication between variables
-			var_mult = multichar_arr.join("</mi><mo>&it;</mo><mi>")
-			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, "<mi>" + var_mult + "</mi>")
+			let var_mult = multichar_arr.join("</mi><mo>&it;</mo><mi>");
+			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, "<mi>" + var_mult + "</mi>");
 		}
 		// comma
 		else if (curr_word.type == "c") {
 			// add invisible comma between variables
-			var_comma = multichar_arr.join("</mi><mo>&ic;</mo><mi>")
-			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, "<mi>" + var_comma + "</mi>")
+			let var_comma = multichar_arr.join("</mi><mo>&ic;</mo><mi>");
+			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, "<mi>" + var_comma + "</mi>");
 		}
 		// variable
 		else if (curr_word.type == "v" || curr_word.type == "a") {
-			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, mi_replace)
-			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_script_regex, mi_script_replace)
+			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, mi_replace);
+			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_script_regex, mi_script_replace);
 		}
 		// function
 		else if (curr_word.type == "f") {
 			// add string for invisible function application
-			invis_func = "<mo>&af;</mo>"
-			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, mi_replace + invis_func)
-			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_script_regex, mi_script_replace + invis_func)
+			let invis_func = "<mo>&af;</mo>";
+			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, mi_replace + invis_func);
+			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_script_regex, mi_script_replace + invis_func);
 		}
 	}
 	// remove multiple instances of invisible function
-	multichar_mathml_text = multichar_mathml_text.replaceAll(/(<mo>&af;<\/mo>)+/g, "<mo>&af;</mo>")
-	return multichar_mathml_text
+	multichar_mathml_text = multichar_mathml_text.replaceAll(/(<mo>&af;<\/mo>)+/g, "<mo>&af;</mo>");
+	return multichar_mathml_text;
 }
 
 function format_mathml() {
-	word_mathml = document.getElementById("word").value
+	let word_mathml = document.getElementById("word").value;
 	// fix word-generated mathml tags
-	paste_mathml = word_mathml.replaceAll("mml:", "").replaceAll(' xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"', "").replaceAll(" ", " ").replaceAll("&#xA0", " ")
+	let paste_mathml = word_mathml.replaceAll("mml:", "").replaceAll(' xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"', "").replaceAll(" ", " ").replaceAll("&#xA0", " ");
 	// remove extra spaces, as well as mspaces for now
-	paste_mathml = rm_extra_space(paste_mathml).replaceAll(/ *<mspace *\/ *>/g, "<mi> </mi>")
+	paste_mathml = rm_extra_space(paste_mathml).replaceAll(/ *<mspace *\/ *>/g, "<mi> </mi>");
 	// get array of multicharacter words
-	multichar_arr = document.getElementById("multichar").value.split("\n")
+	let multichar_arr = document.getElementById("multichar").value.split("\n");
 	// fix multicharacter words
-	paste_mathml_multichar = join_multichar_mi(paste_mathml, multichar_arr)
+	let paste_mathml_multichar = join_multichar_mi(paste_mathml, multichar_arr);
 	// add in mspace
-	replace_mspace_regex = new RegExp(mi_open + ' *' + mi_close, "g")
-	paste_mathml_multichar_mspace = paste_mathml_multichar.replaceAll(replace_mspace_regex, "<mspace />")
+	let replace_mspace_regex = new RegExp(mi_open + ' *' + mi_close, "g");
+	let paste_mathml_multichar_mspace = paste_mathml_multichar.replaceAll(replace_mspace_regex, "<mspace />");
 	// paste_mathml_multichar_var = join_mi_star(paste_mathml_multichar_var, multichar_arr)
-	document.getElementById("paste").value = paste_mathml_multichar_mspace
+	document.getElementById("paste").value = paste_mathml_multichar_mspace;
 }
 </script>
 </head>

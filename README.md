@@ -46,3 +46,9 @@ This will be sorted into
 1. &it will be inserted between all <mi> tags that consecutive contain c, then d, then e, then f.
 2. All consecutive mi tags containing c, then d, then e (including those that have &it between) are joined into <mi>cde</mi>. 
 3. All consecutive mi tags containing a then b are joined into <mi>ab</mi> and are followed by &af.
+
+# MathML extractor
+
+Extracts any lines that have math chunks from an HTML document to more easily scan through manually.
+
+[HTML document here.](get_math/get_math.html)

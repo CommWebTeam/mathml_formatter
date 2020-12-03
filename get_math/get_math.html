@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Download chunks of math from html file</title>
+</head>
+
+<body>
+<form>
+  File to get math from:
+  <input id="html_file" type="file">
+  <br>
+  <br>
+</form>
+<button onclick="get_math()">Get math in file</button>
+<br>
+<br>
+<p>This tool extracts mathml chunks from the content, with their surrounding lines for context.</p>
+<script src="https://commwebteam.github.io/util/download.js"></script> 
+<script src="get_math_helpers.js"></script> 
+</body>
+</html>

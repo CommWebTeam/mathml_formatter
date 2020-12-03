@@ -14,19 +14,19 @@ const special_regex = /&[#a-zA-Z0-9]+;/g
 
 // assign type priorities
 function type_prio(x) {
-	if (x.type == "m") {
+	if (x.type === "m") {
 		return 0;
 	}
-	if (x.type == "c") {
+	if (x.type === "c") {
 		return 0;
 	}
-	if (x.type == "a") {
+	if (x.type === "a") {
 		return 1;
 	}
-	if (x.type == "v") {
+	if (x.type === "v") {
 		return 1;
 	}
-	if (x.type == "f") {
+	if (x.type === "f") {
 		return 1;
 	}
 }
@@ -34,7 +34,7 @@ function type_prio(x) {
 // compare words
 function sort_words(a, b) {
 	// if two words are treated the same, sort by length in reverse
-	if (type_prio(a) == type_prio(b)) {
+	if (type_prio(a) === type_prio(b)) {
 		return a.val.length - b.val.length;
 	}
 	return type_prio(b) - type_prio(a);
@@ -67,7 +67,7 @@ function join_multichar_mi(mathml_text, multichar_list) {
 		// get values and indices of entities
 		
 		let special_char_vals = curr_word.val.match(special_regex);
-		if (special_char_vals == null) {
+		if (special_char_vals === null) {
 			special_char_vals = [];
 		}
 		// loop through entities one by one and get their indices
@@ -101,24 +101,24 @@ function join_multichar_mi(mathml_text, multichar_list) {
 		let mi_replace = "<mi$1>" + curr_word.val + "</mi>";
 		let mi_script_replace = "$2<mrow>" + mi_replace + "</mrow>";
 		// multiplication
-		if (curr_word.type == "m") {
+		if (curr_word.type === "m") {
 			// add invisible multiplication between variables
 			let var_mult = multichar_arr.join("</mi><mo>&it;</mo><mi>");
 			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, "<mi>" + var_mult + "</mi>");
 		}
 		// comma
-		else if (curr_word.type == "c") {
+		else if (curr_word.type === "c") {
 			// add invisible comma between variables
 			let var_comma = multichar_arr.join("</mi><mo>&ic;</mo><mi>");
 			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, "<mi>" + var_comma + "</mi>");
 		}
 		// variable
-		else if (curr_word.type == "v" || curr_word.type == "a") {
+		else if (curr_word.type === "v" || curr_word.type === "a") {
 			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, mi_replace);
 			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_script_regex, mi_script_replace);
 		}
 		// function
-		else if (curr_word.type == "f") {
+		else if (curr_word.type === "f") {
 			// add string for invisible function application
 			let invis_func = "<mo>&af;</mo>";
 			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, mi_replace + invis_func);

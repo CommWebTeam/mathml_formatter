@@ -1,8 +1,8 @@
 // general regex
 const mi_open = '<m[ion]( *[a-z]+ *= *"[-# a-z]+")*>';
 const mi_open_nattr = '<m[ion](?: *[a-z]+ *= *"[-# a-z]+")*>';
-const mo_invis = '(<mo>&#x206[0-9];</mo>)*';
-const mo_invis_nattr = '(?:<mo>&#x206[0-9];</mo>)*';
+const mo_invis = '(<mo>&(?:(?:#x206[0-9])|(?:i[ct]));</mo>)*';
+const mo_invis_nattr = '(?:<mo>&(?:(?:#x206[0-9])|(?:i[ct]));</mo>)*';
 const mi_close = '</m[ion]>';
 const space = '[\s \t\r\n]*';
 const special_regex = /&[#a-zA-Z0-9]+;/g
@@ -80,7 +80,6 @@ function join_multichar_mi(mathml_text, multichar_list) {
 	for (i = 0; i < word_arr.length; i++) {
 		let curr_word = word_arr[i];
 		// get values and indices of entities
-		
 		let special_char_vals = curr_word.val.match(special_regex);
 		if (special_char_vals === null) {
 			special_char_vals = [];

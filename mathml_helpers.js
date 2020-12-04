@@ -14,6 +14,8 @@ function format_mathml() {
 	let paste_mathml = word_mathml.replaceAll("mml:", "").replaceAll(' xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"', "").replaceAll(" ", " ").replaceAll("&#xA0", " ");
 	// remove extra spaces, as well as mspaces for now
 	paste_mathml = rm_extra_space(paste_mathml).replaceAll(/ *<mspace *\/ *>/g, "<mi> </mi>");
+	// remove &af; for now
+	paste_mathml = paste_mathml.replaceAll("<mo>&af;</mo>", "")
 	// get array of multicharacter words
 	let multichar_arr = document.getElementById("multichar").value.split("\n");
 	// fix multicharacter words

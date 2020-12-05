@@ -12,6 +12,10 @@ function format_mathml() {
 	let word_mathml = document.getElementById("word").value;
 	// fix word-generated mathml tags
 	let paste_mathml = word_mathml.replaceAll("mml:", "").replaceAll(' xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"', "").replaceAll(" ", " ").replaceAll("&#xA0", " ");
+	// fix summations if formatting is valid
+	if (document.getElementById("correct_indent").checked) {
+		paste_mathml = format_summations(paste_mathml);
+	}
 	// remove extra spaces, as well as mspaces for now
 	paste_mathml = rm_extra_space(paste_mathml).replaceAll(/ *<mspace *\/ *>/g, "<mi> </mi>");
 	// remove &af; for now
@@ -23,11 +27,39 @@ function format_mathml() {
 	// add in mspace
 	let replace_mspace_regex = new RegExp(mi_open + ' *' + mi_close, "g");
 	let paste_mathml_multichar_mspace = paste_mathml_multichar.replaceAll(replace_mspace_regex, "<mspace />");
-	// paste_mathml_multichar_var = join_mi_star(paste_mathml_multichar_var, multichar_arr)
 	document.getElementById("paste").value = paste_mathml_multichar_mspace;
 }
 
 /* helper functions */
+
+// add padding around mrow which has input regex, including indentation as its first group and remaining content as second
+function add_mrow_padding(mathml_html, input_regex) {
+	let padded_html = mathml_html;
+	let matches = [...padded_html.matchAll(input_regex)];
+	for (let i = 0; i < matches.length; i++) {
+		// get mrow of text (based on having same indents as input line)
+		let mrow_close = matches[i][1] + "</mrow>";
+		// check for just bottom text
+		let bot_regex = new RegExp(matches[i][0] + space + "<mrow>((.|\n)*?)\n" + mrow_close, "g");
+		// add padding around contents of the mrow - change spacing before regex so it won't be matched again later
+		padded_html = padded_html.replace(bot_regex, "\n" + matches[i][2] + '<mrow><mpadded lspace="-0.7em" voffset="-1ex">$1</mpadded></mrow>');
+
+		// check for both top and bottom text
+		let bot_top_regex = new RegExp('</mpadded></mrow>' + space + "<mrow>((.|\n)*?)\n" + mrow_close, "g");
+		// add padding around contents of the mrow - change spacing before regex so it won't be matched again later
+		padded_html = padded_html.replace(bot_top_regex, "\n " + '</mpadded></mrow><mrow><mpadded lspace="-0.7em" voffset="1ex">$1</mpadded></mrow>');
+	}
+	return padded_html;
+}
+
+// format summations, putting their text above and below
+function format_summations(mathml_text) {
+	// remove padding for now
+	let edited_html = mathml_text.replaceAll(/<mpadded lspace="-0.7em" voffset="(?:.*?)ex">((.|\n)*?)<\/mpadded>/g, "$1");
+	// pad each top + bottom text summation
+	edited_html = add_mrow_padding(edited_html, /\n( *)(<mo stretchy="false">(.*?)<\/mo>)/g);
+	return edited_html;
+}
 
 // assign type priorities
 function type_prio(x) {
@@ -55,12 +87,6 @@ function sort_words(a, b) {
 		return a.val.length - b.val.length;
 	}
 	return type_prio(b) - type_prio(a);
-}
-
-// join consecutive mi into * - wip
-function join_mi_star(mathml_text) {
-	let mi_star_regex = new RegExp(mi_close + mo_invis + space + mi_open + '\*' + mi_close, "g");
-	return mathml_text.replaceAll(mi_star_regex, "*</mi>");
 }
 
 // join consecutive mi for words in list

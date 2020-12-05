@@ -36,6 +36,7 @@ function format_mathml() {
 function add_mrow_padding(mathml_html, input_regex) {
 	let padded_html = mathml_html;
 	let matches = [...padded_html.matchAll(input_regex)];
+	console.log(matches.length)
 	for (let i = 0; i < matches.length; i++) {
 		// get mrow of text (based on having same indents as input line)
 		let mrow_close = matches[i][1] + "</mrow>";
@@ -47,7 +48,7 @@ function add_mrow_padding(mathml_html, input_regex) {
 		// check for both top and bottom text
 		let bot_top_regex = new RegExp('</mpadded></mrow>' + space + "<mrow>((.|\n)*?)\n" + mrow_close, "g");
 		// add padding around contents of the mrow - change spacing before regex so it won't be matched again later
-		padded_html = padded_html.replace(bot_top_regex, "\n " + '</mpadded></mrow><mrow><mpadded lspace="-0.7em" voffset="1ex">$1</mpadded></mrow>');
+		padded_html = padded_html.replace(bot_top_regex, "\n " + '</mpadded> </mrow><mrow><mpadded lspace="-0.7em" voffset="1ex">$1</mpadded> </mrow>');
 	}
 	return padded_html;
 }

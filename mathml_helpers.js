@@ -36,7 +36,6 @@ function format_mathml() {
 function add_mrow_padding(mathml_html, input_regex) {
 	let padded_html = mathml_html;
 	let matches = [...padded_html.matchAll(input_regex)];
-	console.log(matches.length)
 	for (let i = 0; i < matches.length; i++) {
 		// get mrow of text (based on having same indents as input line)
 		let mrow_close = matches[i][1] + "</mrow>";
@@ -57,8 +56,11 @@ function add_mrow_padding(mathml_html, input_regex) {
 function format_summations(mathml_text) {
 	// remove padding for now
 	let edited_html = mathml_text.replaceAll(/<mpadded lspace="-0.7em" voffset="(?:.*?)ex">((.|\n)*?)<\/mpadded>/g, "$1");
+	edited_html = edited_html.replaceAll(/<mpadded height="\+2ex" voffset="1ex">((.|\n)*?)<\/mpadded>/g, "$1")
 	// pad each top + bottom text summation
 	edited_html = add_mrow_padding(edited_html, /\n( *)(<mo stretchy="false">(.*?)<\/mo>)/g);
+	// pad spacing around summation
+	edited_html = edited_html.replaceAll(/(<munder(over)*>(.|\n)*?<\/munder(over)*>)/g, '<mpadded height="+2ex" voffset="1ex">$1</mpadded>');
 	return edited_html;
 }
 

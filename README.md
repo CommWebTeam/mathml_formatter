@@ -1,5 +1,5 @@
 # MathML formatter
-Takes in a line-separated list of side-by-side variables in the mathml document and groups instances of them together appropriately. By default, when copying variables from word, it does not recognize when a group of characters represents a single variable; each character is placed in its own separate <mi> tag and treated as a separate variable.
+Takes in a line-separated list of side-by-side variables in the mathml document and groups instances of them together appropriately. By default, when copying variables from word, word does not recognize when a group of characters represents a single variable; each character is placed in its own separate <mi> tag and treated as a separate variable. This tool seeks to join them together where appropriate.
 
 [HTML document here.](mathml.html)
 
@@ -25,6 +25,9 @@ For f, &af; is also added after the function.
 For m and c, &it; and &ic; are respectively added between each character.
 
 Note that variables/functions/acronyms are checked after multiplication/commas to find if a multicharacter variable is multiplied by another variable. Within these two groups, strings are sorted by length in descending order.
+
+## Summation formatting
+If the option is checked, the tool will also attempt to adjust summations so that their text is above/below the summation symbol rather than to the right. It does this by searching for summations using the keyword <i>&lt;mo&gt; stretchy="false"</i>, then looks for the next mrow tags that have the same indentation as the keyword to add the padding around. It also adds padding around &lt;munder&gt; and &lt;munderover&gt;.
 
 ### Example
 Given the following list:

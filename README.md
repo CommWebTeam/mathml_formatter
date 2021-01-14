@@ -46,7 +46,7 @@ So the list would consist of
 
 ## Priority
 
-Note that variables/functions/acronyms are checked after multiplication/commas to find if a multicharacter variable is multiplied by another variable. Within these two groups, strings are sorted by length in descending order.
+Variables/functions/acronyms are checked after multiplication/commas. This is find if a multicharacter variable is multiplied by another variable. Within these two groups, strings are sorted by length in descending order.
 
 ### Example
 Given the following list:

@@ -32,6 +32,7 @@ max(alpha) = ab - c_(ij)
 
 Which states that [the maximum of alpha] is equal to [(a multiplied by b) minus (c subscript ij)], where i indicates row and j indicates column.
 
+We can see that
 - max is a function.
 - alpha is a variable.
 - ab consists of two variables being multiplied against each other.

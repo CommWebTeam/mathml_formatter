@@ -17,7 +17,7 @@ function format_mathml() {
 		paste_mathml = format_summations(paste_mathml);
 	}
 	// remove extra spaces, as well as mspaces for now
-	paste_mathml = rm_extra_space(paste_mathml).replaceAll(/ *<mspace *\/ *>/g, "<mi> </mi>");
+	paste_mathml = format_spacing(paste_mathml).replaceAll(/ *<mspace *\/ *>/g, "<mi> </mi>");
 	// remove &af; for now
 	paste_mathml = paste_mathml.replaceAll("<mo>&af;</mo>", "")
 	// get array of multicharacter words
@@ -133,7 +133,7 @@ function join_multichar_mi(mathml_text, multichar_list) {
 		}
 		// escape regex characters
 		for (j = 0; j < multichar_arr.length; j++) {
-			multichar_arr[j] = replace_regex_chars(multichar_arr[j]);
+			multichar_arr[j] = escape_regex_chars(multichar_arr[j]);
 		}
 		// join characters with regex for <mi> and invisible tags to find instances
 		let mi_split_str = "(?:" + mi_close + mo_invis_nattr + space + mi_open_nattr + ")*";

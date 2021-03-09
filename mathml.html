@@ -6,11 +6,11 @@
 <p>This script formats the mathml copied from word to be immediately pasteable into an html document.</p>
 <p>Paste the HTML including the word mathml here.</p>
 <textarea id="word" rows="10" cols="100"></textarea>
-<br>
+<br/>
 <input type="checkbox" id="correct_indent" name="correct_indent">
 <label for="correct_indent">Is the indentation for the above paste valid? (Will try to format summations if so)</label>
-<br>
-<br>
+<br/>
+<br/>
 <p>Paste the list of multi-character variables/functions in the mathml here, followed by a space and how to treat it, e.g.</p>
 <p>xyz m</p>
 <p>The following are ways to treat the multi-character word:
@@ -24,10 +24,10 @@ Separate by newline.
 </p>
 <p>More in-depth information can be found in the <a rel="external" href="https://commwebteam.github.io/mathml_formatter/">readme</a>.</p>
 <textarea id="multichar" rows="10" cols="100"></textarea>
-<br>
+<br/>
 <button onclick="format_mathml()">Fix mathml paste</button>
-<br>
-<br>
+<br/>
+<br/>
 <textarea id="paste" rows="20" cols="100">Output here.</textarea>
 <script src="https://commwebteam.github.io/util/format_helpers.js"></script>
 <script src="mathml_helpers.js"></script> 

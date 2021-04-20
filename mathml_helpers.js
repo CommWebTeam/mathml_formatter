@@ -9,7 +9,7 @@ const special_regex = /&[#a-zA-Z0-9]+;/g
 
 // apply various functions to clean up mathml code from word paste
 function format_mathml() {
-	let word_mathml = document.getElementById("word").value;
+	let word_mathml = document.getElementById("word").value.replaceAll("\r\n", "\n");
 	// fix word-generated mathml tags
 	let paste_mathml = word_mathml.replaceAll("mml:", "").replaceAll(' xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"', "").replaceAll(" ", " ").replaceAll("&#xA0", " ");
 	// fix summations if formatting is valid
@@ -17,7 +17,9 @@ function format_mathml() {
 		paste_mathml = format_summations(paste_mathml);
 	}
 	// remove extra spaces, as well as mspaces for now
-	paste_mathml = format_spacing(paste_mathml).replaceAll(/ *<mspace *\/ *>/g, "<mi> </mi>");
+	paste_mathml = replace_invisible_nbsp(paste_mathml);
+	paste_mathml = rm_multispace(paste_mathml);
+	paste_mathml = paste_mathml.replaceAll(/ *<mspace *\/ *>/g, "<mi> </mi>");
 	// remove &af; for now
 	paste_mathml = paste_mathml.replaceAll("<mo>&af;</mo>", "")
 	// get array of multicharacter words

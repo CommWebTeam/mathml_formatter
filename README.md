@@ -1,7 +1,7 @@
 # MathML formatter
 Takes in a line-separated list of side-by-side variables in the mathml document and groups instances of them together appropriately. By default, when copying variables from word, word does not recognize when a group of characters represents a single variable; each character is placed in its own separate <mi> tag and treated as a separate variable. This tool seeks to join them together where appropriate.
 
-[HTML page of tool here.](mathml.html)
+[HTML page of tool here.](https://commwebteam.github.io/mathml_formatter/mathml.html)
 
 It also does some basic formatting of the MathML code pasted from word, including:
 - removing "mml:" in the tags

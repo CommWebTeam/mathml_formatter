@@ -4,8 +4,12 @@
 </head>
 <body>
 <p>This script formats the mathml copied from word to be immediately pasteable into an html document.</p>
-<p>Paste the HTML including the word mathml here.</p>
-<textarea id="word" rows="10" cols="100"></textarea>
+<input id="html_file" type="file" />
+<br />
+<br />
+<br />
+<input type="checkbox" id="rm_mathvariant" name="rm_mathvariant">
+<label for="rm_mathvariant">Remove mathvariant="normal"</label>
 <br />
 <input type="checkbox" id="correct_indent" name="correct_indent">
 <label for="correct_indent">Is the indentation for the above paste valid? (Will try to format summations if so)</label>
@@ -19,16 +23,13 @@
   <li>f - the word represents a single multi-character function.</li>
   <li>m - the word represents several variables to be multiplied together.</li>
   <li>c - the word represents several variables listed side-by-side.</li>
+  <li>a - the word represents a single multi-character acronym (currently treated the same way as v).</li>
 </ul>
 Separate by newline.
 </p>
 <p>More in-depth information can be found in the <a rel="external" href="https://commwebteam.github.io/mathml_formatter/">readme</a>.</p>
-<textarea id="multichar" rows="10" cols="100"></textarea>
 <br />
 <button onclick="format_mathml()">Fix mathml paste</button>
-<br />
-<br />
-<textarea id="paste" rows="20" cols="100">Output here.</textarea>
 <script src="https://commwebteam.github.io/gen_dw_format/download.js"></script>
 <script src="https://commwebteam.github.io/gen_dw_format/format_helpers.js"></script>
 <script src="https://commwebteam.github.io/gen_dw_format/dreamweaver_paste_formatter/dw_paste_format_helpers.js"></script>

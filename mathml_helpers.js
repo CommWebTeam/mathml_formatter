@@ -9,27 +9,37 @@ const special_regex = /&[#a-zA-Z0-9]+;/g
 
 // apply various functions to clean up mathml code from word paste
 function format_mathml() {
-	let word_mathml = document.getElementById("word").value.replaceAll("\r\n", "\n");
-	// fix word-generated mathml tags
-	let paste_mathml = word_mathml.replaceAll("mml:", "").replaceAll(' xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"', "").replaceAll(" ", " ").replaceAll("&#xA0", " ");
-	// fix summations if formatting is valid
-	if (document.getElementById("correct_indent").checked) {
-		paste_mathml = format_summations(paste_mathml);
+	// read in uploaded file as string
+	let file_reader = new FileReader();
+	let html_file = document.getElementById("html_file").files[0];
+	file_reader.onload = function(event) {
+		let word_mathml = event.target.result.replaceAll("\r\n", "\n");
+		// fix word-generated mathml tags
+		let cleaned_mathml = word_mathml.replaceAll("mml:", "").replaceAll(' xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"', "").replaceAll(" ", " ").replaceAll("&#xA0", " ");
+		// remove mathvariant if needed
+		if (document.getElementById("rm_mathvariant").checked) {
+			cleaned_mathml = cleaned_mathml.replaceAll(' mathvariant="normal"', "");
+		}
+		// fix summations if formatting is valid
+		if (document.getElementById("correct_indent").checked) {
+			cleaned_mathml = format_summations(cleaned_mathml);
+		}
+		// remove extra spaces
+		cleaned_mathml = replace_invisible_nbsp(cleaned_mathml);
+		cleaned_mathml = rm_multispace(cleaned_mathml);
+		// remove existing mspace and &af; so they can be readded later without duplicating
+		cleaned_mathml = cleaned_mathml.replaceAll(/ *<mspace *\/ *>/g, "<mi> </mi>");
+		cleaned_mathml = cleaned_mathml.replaceAll("<mo>&af;</mo>", "")
+		// get array of multicharacter words
+		let multichar_arr = document.getElementById("multichar").value.split("\n");
+		// fix multicharacter words
+		let cleaned_mathml_multichar = join_multichar_mi(cleaned_mathml, multichar_arr);
+		// add mspace back in
+		let replace_mspace_regex = new RegExp(mi_open + ' *' + mi_close, "g");
+		let cleaned_mathml_multichar_mspace = cleaned_mathml_multichar.replaceAll(replace_mspace_regex, "<mspace />");
+		download(cleaned_mathml_multichar_mspace, "mathml.html", "text/html");
 	}
-	// remove extra spaces, as well as mspaces for now
-	paste_mathml = replace_invisible_nbsp(paste_mathml);
-	paste_mathml = rm_multispace(paste_mathml);
-	paste_mathml = paste_mathml.replaceAll(/ *<mspace *\/ *>/g, "<mi> </mi>");
-	// remove &af; for now
-	paste_mathml = paste_mathml.replaceAll("<mo>&af;</mo>", "")
-	// get array of multicharacter words
-	let multichar_arr = document.getElementById("multichar").value.split("\n");
-	// fix multicharacter words
-	let paste_mathml_multichar = join_multichar_mi(paste_mathml, multichar_arr);
-	// add in mspace
-	let replace_mspace_regex = new RegExp(mi_open + ' *' + mi_close, "g");
-	let paste_mathml_multichar_mspace = paste_mathml_multichar.replaceAll(replace_mspace_regex, "<mspace />");
-	document.getElementById("paste").value = paste_mathml_multichar_mspace;
+	file_reader.readAsText(html_file);
 }
 
 /* helper functions */
@@ -45,7 +55,6 @@ function add_mrow_padding(mathml_html, input_regex) {
 		let bot_regex = new RegExp(matches[i][0] + space + "<mrow>((.|\n)*?)\n" + mrow_close, "g");
 		// add padding around contents of the mrow - change spacing before regex so it won't be matched again later
 		padded_html = padded_html.replace(bot_regex, "\n" + matches[i][2] + '<mrow><mpadded lspace="-0.7em" voffset="-1ex">$1</mpadded></mrow>');
-
 		// check for both top and bottom text
 		let bot_top_regex = new RegExp('</mpadded></mrow>' + space + "<mrow>((.|\n)*?)\n" + mrow_close, "g");
 		// add padding around contents of the mrow - change spacing before regex so it won't be matched again later
@@ -66,26 +75,17 @@ function format_summations(mathml_text) {
 	return edited_html;
 }
 
-// assign type priorities
+// assign type priorities so that joining variables (a/v/f) is done after adding separators (m/c), so that joining variables takes priority
 function type_prio(x) {
-	if (x.type === "m") {
+	if ((x.type === "m") || (x.type === "c")) {
 		return 0;
 	}
-	if (x.type === "c") {
-		return 0;
-	}
-	if (x.type === "a") {
-		return 1;
-	}
-	if (x.type === "v") {
-		return 1;
-	}
-	if (x.type === "f") {
+	if ((x.type === "a") || (x.type === "v") || (x.type === "f")) {
 		return 1;
 	}
 }
 
-// compare words
+// sort words so that longer words are dealt with first, to prevent shorter subwords from being joined within a longer word
 function sort_words(a, b) {
 	// if two words are treated the same, sort by length in reverse
 	if (type_prio(a) === type_prio(b)) {
@@ -107,7 +107,7 @@ function join_multichar_mi(mathml_text, multichar_list) {
 			word_arr.push({val: multichar_val, type: multichar_type});
 		}
 	}
-	// sort list of words by what to do with them
+	// sort list of words by what to do with them - joining variables comes later so that it takes precedence for subwords over m/c in a longer word
 	word_arr.sort(sort_words).reverse();
 	// loop through each word
 	for (i = 0; i < word_arr.length; i++) {
@@ -161,6 +161,7 @@ function join_multichar_mi(mathml_text, multichar_list) {
 		}
 		// variable
 		else if (curr_word.type === "v" || curr_word.type === "a") {
+			// join consecutive mi/mo/mn tags
 			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, mi_replace);
 			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_script_regex, mi_script_replace);
 		}
@@ -168,11 +169,12 @@ function join_multichar_mi(mathml_text, multichar_list) {
 		else if (curr_word.type === "f") {
 			// add string for invisible function application
 			let invis_func = "<mo>&af;</mo>";
+			// join consecutive mi/mo/mn tags
 			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, mi_replace + invis_func);
 			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_script_regex, mi_script_replace + invis_func);
 		}
 	}
-	// remove multiple instances of invisible function
+	// remove consecutive instances of invisible function
 	multichar_mathml_text = multichar_mathml_text.replaceAll(/(<mo>&af;<\/mo>)+/g, "<mo>&af;</mo>");
 	return multichar_mathml_text;
 }

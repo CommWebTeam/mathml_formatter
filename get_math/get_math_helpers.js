@@ -26,7 +26,3 @@ function get_math() {
 	}
 	file_reader_content.readAsText(content_str);
 }
-
-/* helpers */
-
-// none

@@ -5,7 +5,6 @@ const mo_invis = '(<mo>&(?:(?:#x206[0-9])|(?:i[ct]));</mo>)*';
 const mo_invis_nattr = '(?:<mo>&(?:(?:#x206[0-9])|(?:i[ct]));</mo>)*';
 const mi_close = '</m[ion]>';
 const space = '[\s \t\r\n]*';
-const special_regex = /&[#a-zA-Z0-9]+;/g
 
 // apply various functions to clean up mathml code from word paste
 function format_mathml() {
@@ -47,17 +46,18 @@ function format_mathml() {
 // add padding around mrow which has input regex, including indentation as its first group and remaining content as second
 function add_mrow_padding(mathml_html, input_regex) {
 	let padded_html = mathml_html;
+	// each value in matches is an array where index 0 is the full match, index 1 is the munder(over) before the summation, index 2 is the indentation before the summation, index 3 is the full summation, index 4 is the values inside the summation
 	let matches = [...padded_html.matchAll(input_regex)];
 	for (let i = 0; i < matches.length; i++) {
-		// get mrow of text (based on having same indents as input line)
-		let mrow_close = matches[i][1] + "</mrow>";
-		// check for just bottom text
+		// get closing mrow of text (based on having same indentation as input line)
+		let mrow_close = matches[i][2] + "</mrow>";
+		// fix the first row of the summation, which should be the summation's bottom value if there is just one row
 		let bot_regex = new RegExp(matches[i][0] + space + "<mrow>((.|\n)*?)\n" + mrow_close, "g");
-		// add padding around contents of the mrow - change spacing before regex so it won't be matched again later
-		padded_html = padded_html.replace(bot_regex, "\n" + matches[i][2] + '<mrow><mpadded lspace="-0.7em" voffset="-1ex">$1</mpadded></mrow>');
-		// check for both top and bottom text
+		// add padding around contents of the mrow - remove spacing after newlines (i.e. proper indentation) so it won't be matched again later
+		padded_html = padded_html.replace(bot_regex, matches[i][1] + "\n" + matches[i][3] + '<mrow><mpadded lspace="-0.7em" voffset="-1ex">$1</mpadded></mrow>');
+		// fix the second row of the summation, which, if it exists, means there are both top and bottom values
 		let bot_top_regex = new RegExp('</mpadded></mrow>' + space + "<mrow>((.|\n)*?)\n" + mrow_close, "g");
-		// add padding around contents of the mrow - change spacing before regex so it won't be matched again later
+		// add padding around contents of the mrow - remove spacing after newlines (i.e. proper indentation) so it won't be matched again later
 		padded_html = padded_html.replace(bot_top_regex, "\n " + '</mpadded> </mrow><mrow><mpadded lspace="-0.7em" voffset="1ex">$1</mpadded> </mrow>');
 	}
 	return padded_html;
@@ -69,13 +69,13 @@ function format_summations(mathml_text) {
 	let edited_html = mathml_text.replaceAll(/<mpadded lspace="-0.7em" voffset="(?:.*?)ex">((.|\n)*?)<\/mpadded>/g, "$1");
 	edited_html = edited_html.replaceAll(/<mpadded height="\+2ex" voffset="1ex">((.|\n)*?)<\/mpadded>/g, "$1")
 	// pad each top + bottom text summation
-	edited_html = add_mrow_padding(edited_html, /\n( *)(<mo stretchy="false">(.*?)<\/mo>)/g);
+	edited_html = add_mrow_padding(edited_html, /(<munder(?:over)*>) *\n( *)(<mo stretchy="false">(.*?)<\/mo>)/g);
 	// pad spacing around summation
 	edited_html = edited_html.replaceAll(/(<munder(over)*>(.|\n)*?<\/munder(over)*>)/g, '<mpadded height="+2ex" voffset="1ex">$1</mpadded>');
 	return edited_html;
 }
 
-// assign type priorities so that joining variables (a/v/f) is done after adding separators (m/c), so that joining variables takes priority
+// assign type priorities so that joining variables (a/v/f) is done after adding separators (m/c), since joining variables takes priority
 function type_prio(x) {
 	if ((x.type === "m") || (x.type === "c")) {
 		return 0;
@@ -85,7 +85,7 @@ function type_prio(x) {
 	}
 }
 
-// sort words so that longer words are dealt with first, to prevent shorter subwords from being joined within a longer word
+// sort to deal with longer words first, so that shorter words being joined earlier doesn't prevent longer words from being recognized later
 function sort_words(a, b) {
 	// if two words are treated the same, sort by length in reverse
 	if (type_prio(a) === type_prio(b)) {
@@ -94,9 +94,14 @@ function sort_words(a, b) {
 	return type_prio(b) - type_prio(a);
 }
 
-// join consecutive mi for words in list
+// join consecutive mi/mo/mn for words in list
 function join_multichar_mi(mathml_text, multichar_list) {
 	let multichar_mathml_text = mathml_text;
+	/*
+	============================
+	Create list of words to be joined
+	============================
+	*/
 	// get list of objects containing word value and type of word
 	let word_arr = [];
 	for (i = 0; i < multichar_list.length; i++) {
@@ -107,27 +112,31 @@ function join_multichar_mi(mathml_text, multichar_list) {
 			word_arr.push({val: multichar_val, type: multichar_type});
 		}
 	}
-	// sort list of words by what to do with them - joining variables comes later so that it takes precedence for subwords over m/c in a longer word
+	// sort list of words
 	word_arr.sort(sort_words).reverse();
 	// loop through each word
 	for (i = 0; i < word_arr.length; i++) {
 		let curr_word = word_arr[i];
-		// get values and indices of entities
-		let special_char_vals = curr_word.val.match(special_regex);
-		if (special_char_vals === null) {
-			special_char_vals = [];
-		}
-		// loop through entities one by one and get their indices
-		let curr_word_no_special = curr_word.val
-		let special_char_inds = []
+		/*
+		============================
+		Split each word into a character array to search for each character in an <m[ion]> tag
+		Make html entities count as a single character in the character array
+		============================
+		*/
+		// get values of html entities
+		let special_char_vals = match_with_empty(curr_word.val, /&[#a-zA-Z0-9]+;/g);
+		// loop through html entities one by one and get their indices
+		let curr_word_no_special = curr_word.val;
+		let special_char_inds = [];
 		for (j = 0; j < special_char_vals.length; j++) {
 			let curr_special_val = special_char_vals[j];
 			let special_val_ind = curr_word_no_special.indexOf(curr_special_val);
 			special_char_inds.push(special_val_ind);
 			curr_word_no_special = curr_word_no_special.replace(curr_special_val, " ");
 		}
-		// split word up to individual characters and add entities back in
+		// split word up to individual characters
 		let multichar_arr = curr_word_no_special.split("");
+		// add html entities back in
 		for (j = 0; j < special_char_inds.length; j++) {
 			let curr_ind = special_char_inds[j];
 			let curr_val = special_char_vals[j];
@@ -137,6 +146,11 @@ function join_multichar_mi(mathml_text, multichar_list) {
 		for (j = 0; j < multichar_arr.length; j++) {
 			multichar_arr[j] = escape_regex_chars(multichar_arr[j]);
 		}
+		/*
+		============================
+		Create regex statements to search for m[ion] tags to join
+		============================
+		*/
 		// join characters with regex for <mi> and invisible tags to find instances
 		let mi_split_str = "(?:" + mi_close + mo_invis_nattr + space + mi_open_nattr + ")*";
 		let mi_regex = new RegExp(mi_open + multichar_arr.join(mi_split_str) + mi_close, "g");
@@ -147,6 +161,11 @@ function join_multichar_mi(mathml_text, multichar_list) {
 		// set replacement values for multi-char
 		let mi_replace = "<mi$1>" + curr_word.val + "</mi>";
 		let mi_script_replace = "$2<mrow>" + mi_replace + "</mrow>";
+		/*
+		============================
+		Join m[ion] tags
+		============================
+		*/
 		// multiplication
 		if (curr_word.type === "m") {
 			// add invisible multiplication between variables

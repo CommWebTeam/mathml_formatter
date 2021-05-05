@@ -1,4 +1,12 @@
-Del v
-Delt m
-abc c
-de f
+abc v     
+     def a 
+Mathvariant v
+ghi jkl×2
+word v
+Nestedword c
+xyz m
+max f
+alpha v
+ab m
+ij c
+&Delta;value* v

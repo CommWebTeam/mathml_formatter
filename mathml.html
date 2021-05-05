@@ -8,11 +8,11 @@
 <br />
 <br />
 <br />
-<input type="checkbox" id="rm_mathvariant" name="rm_mathvariant">
+<input type="checkbox" id="rm_mathvariant" name="rm_mathvariant" checked>
 <label for="rm_mathvariant">Remove mathvariant="normal"</label>
 <br />
 <input type="checkbox" id="correct_indent" name="correct_indent">
-<label for="correct_indent">Is the indentation for the above paste valid? (Will try to format summations if so)</label>
+<label for="correct_indent">Attempt to format summations that have top/bottom values? (Requires the document to have proper indentation)</label>
 <br />
 <br />
 <p>Paste the list of multi-character variables/functions in the mathml here, followed by a space and how to treat it, e.g.</p>
@@ -27,9 +27,13 @@
 </ul>
 Separate by newline.
 </p>
-<p>More in-depth information can be found in the <a rel="external" href="https://commwebteam.github.io/mathml_formatter/">readme</a>.</p>
+<textarea id="multichar" rows="10" cols="100"></textarea>
+<br />
 <br />
 <button onclick="format_mathml()">Fix mathml paste</button>
+<p>This tool joins mi, mo, and mn tags according to the list provided above. It also removes the extra text in mathml tags that Word generates, e.g. "mml:". It may be helpful to use in conjunction with the <a rel="external" href="https://github.com/CommWebTeam/vba#mathml-macro">vba script to extract mathml in a Word document</a>, and the <a rel="external" href="https://commwebteam.github.io/gen_dw_format/dreamweaver_paste_formatter/dw_paste_format.html">general Dreamweaver paste formatting tool</a> to convert the fake tags created by the vba script into actual math tags.</p>
+<p>It assumes proper source formatting (in Dreamweaver, Edit -> Code -> Apply Source Formatting) and consistent space encoding.</p>
+<p>More in-depth information can be found in the <a rel="external" href="https://commwebteam.github.io/mathml_formatter/">readme</a>.</p>
 <script src="https://commwebteam.github.io/gen_dw_format/download.js"></script>
 <script src="https://commwebteam.github.io/gen_dw_format/format_helpers.js"></script>
 <script src="https://commwebteam.github.io/gen_dw_format/dreamweaver_paste_formatter/dw_paste_format_helpers.js"></script>

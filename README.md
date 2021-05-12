@@ -24,9 +24,9 @@ The single character indicates how the variable(s) should be treated:
 
 For v, f, and a, consecutive &lt;mi> tags that each contain a character in the string are joined together. The tool also checks for a specific edge case where the final character in the string is part of a superscript of subscript tag.
 
-For f, &amp;af; is also added after the function.
+For f, `&af;` is also added after the function.
 
-For m and c, &amp;it; and &amp;ic; are respectively added between each character.
+For m and c, `&it;` and `&ic;` are respectively added between each character.
 
 ### Example list
 
@@ -50,7 +50,34 @@ So the list would consist of
 
 and the MathML would look like so:
 
-&lt;math>&lt;mrow>&lt;mrow>&lt;mi>max&lt;/mi>&lt;mo>&amp;af;&lt;/mo>&lt;/mrow>&lt;mo>⁡&lt;/mo>&lt;mrow>&lt;mfenced separators="|">&lt;mrow>&lt;mi>alpha&lt;/mi>&lt;/mrow>&lt;/mfenced>&lt;/mrow>&lt;/mrow>&lt;mo>=&lt;/mo>&lt;msub>&lt;mrow>&lt;mi>c&lt;/mi>&lt;/mrow>&lt;mrow>&lt;mi>i&lt;/mi>&lt;mo>&amp;ic;&lt;/mo>&lt;mi>j&lt;/mi>&lt;/mrow>&lt;/msub>&lt;/math>
+```
+<math>
+    <mrow>
+        <mrow>
+            <mi>max</mi>
+            <mo>&af;</mo>
+        </mrow>
+        <mrow>
+            <mfenced separators="|">
+                <mrow>
+                    <mi>alpha</mi>
+                </mrow>
+            </mfenced>
+        </mrow>
+    </mrow>
+    <mo>=</mo>
+    <msub>
+        <mrow>
+            <mi>c</mi>
+        </mrow>
+        <mrow>
+            <mi>i</mi>
+            <mo>&ic;</mo>
+            <mi>j</mi>
+        </mrow>
+    </msub>
+</math>
+```
 
 ### Variable list priority
 
@@ -73,12 +100,12 @@ This will be sorted into
 
 *ab f*
 
-1. &it will be inserted between all &lt;mi> tags that consecutive contain c, then d, then e, then f.
-2. All consecutive mi tags containing c, then d, then e (including those that have &it between) are joined into &lt;mi>cde&lt;/mi>. 
-3. All consecutive mi tags containing a then b are joined into &lt;mi>ab&lt;/mi> and are followed by &af.
+1. `&it;` will be inserted between all `<mi>` tags that consecutive contain c, then d, then e, then f.
+2. All consecutive mi tags containing c, then d, then e (including those that have `&it;` between) are joined into `<mi>cde</mi>`. 
+3. All consecutive mi tags containing a then b are joined into `<mi>ab</mi>` and are followed by `&af;`.
 
 ## Summation formatting
-If the option is checked, the tool will also attempt to adjust summations that have top/bottom values so that their text is above/below the summation symbol rather than to the right. It also adds padding around &lt;munder&gt; and &lt;munderover&gt;.
+If the option is checked, the tool will also attempt to adjust summations that have top/bottom values so that their text is above/below the summation symbol rather than to the right. It also adds padding around `<munder>` and `<munderover>`.
 
 The current padding added around rows is
 - height="+2ex" voffset="1ex" for the summation itself;
@@ -87,7 +114,7 @@ The current padding added around rows is
 
 You can adjust these values in the format_summations() function in mathml_helpers.js.
 
-The tool searches for summations using the keyword *&lt;mo&gt; stretchy="false"*, then looks for the next mrow tags that have the same indentation as the keyword to add the padding around. Since it matches opening and closing tags based on them having the same indentation, it requires proper HTML indentation (you can apply this in Dreamweaver through Edit -> Code -> Apply Source Formatting).
+The tool searches for summations using the keyword `<mo stretchy="false">`, then looks for the next mrow tags that have the same indentation as the keyword to add the padding around. Since it matches opening and closing tags based on them having the same indentation, it requires proper HTML indentation (you can apply this in Dreamweaver through Edit -> Code -> Apply Source Formatting).
 
 # Working with MathML when converting Word documents
 
@@ -95,7 +122,7 @@ The tool searches for summations using the keyword *&lt;mo&gt; stretchy="false"*
 
 You can copy equations from Word as MathML code instead of the default linear formatting option through the following steps:
 
-1. Click on any equation in the Word document.
+1. Click on any equation in the Word document. (You can create your own equation through the "Insert" tab of the ribbon, on its right side.)
 2. In the "Design" tab of the ribbon, go to Equation Options (the arrow at the bottom right of the "Tools" section):
 ![Equation options](equation_options.png)
 3. Select "Copy MathML to the clipboard as plain text".

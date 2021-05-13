@@ -10,7 +10,7 @@ It also does some basic formatting of the MathML code pasted from word, includin
 
 If the option is checked, it also removes the *mathvariant="normal"* attribute (this formatting usually happens when you copy text from elsewhere in the Word document into an equation).
 
-This tool assumes consistent space encoding (dealt with in the [general Dreamweaver paste formatting tool](https://commwebteam.github.io/gen_dw_format/dreamweaver_paste_formatter/dw_paste_format.html)).
+This tool assumes consistent space encoding (dealt with in the [general Dreamweaver paste formatting tool](https://commwebteam.github.io/gen_dw_format/dreamweaver_paste_formatter/format_dw_paste.html)).
 
 ## How to format the variable list
 The list of side-by-side variables should be line-separated. Each line should consist of the variable name(s), followed by a space and then a single character of v, f, m, c, or a.
@@ -230,7 +230,7 @@ You can copy equations from Word as MathML code instead of the default linear fo
 
 Since copying an entire Word document will copy the equations in linear format instead of MathML, even if the above option is selected, the VBA macro in our [macro repository](https://github.com/CommWebTeam/vba) copies the math out of the equations as MathML, and then pastes them back into the document at the same location. You can then copy the entire Word document into Dreamweaver with the MathML intact.
 
-After doing so, since the MathML tags are read as text, the brackets will be pasted as their html entities (e.g. &lt;math> will be pasted as &amp;lt;math&amp;gt;). You can fix this using one of the checks in the [general Dreamweaver paste formatting tool](https://commwebteam.github.io/gen_dw_format/dreamweaver_paste_formatter/dw_paste_format.html).
+After doing so, since the MathML tags are read as text, the brackets will be pasted as their html entities (e.g. &lt;math> will be pasted as &amp;lt;math&amp;gt;). You can fix this using one of the checks in the [general Dreamweaver paste formatting tool](https://commwebteam.github.io/gen_dw_format/dreamweaver_paste_formatter/format_dw_paste.html).
 
 ## Visually inspecting MathML equations for correctness
 

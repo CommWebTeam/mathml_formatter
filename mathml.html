@@ -3,20 +3,19 @@
 <head>
 </head>
 <body>
-<p>This script formats the mathml copied from word to be immediately pasteable into an html document.</p>
-<input id="html_file" type="file" />
+<p>This tool joins mi, mo, and mn tags according to the multi-character variable/function list provided below. It also removes the extra text in mathml tags that Word generates, e.g. "mml:".</p>
+<p>It may be helpful to use this tool in conjunction with the <a rel="external" href="https://github.com/CommWebTeam/vba#mathml-macro">vba script to extract mathml in a Word document</a>, and the <a rel="external" href="https://commwebteam.github.io/gen_dw_format/dreamweaver_paste_formatter/dw_paste_format.html">general Dreamweaver paste formatting tool</a> to convert the fake tags created by the vba script into actual math tags.</p>
 <br />
-<br />
-<br />
-<input type="checkbox" id="rm_mathvariant" name="rm_mathvariant" checked>
-<label for="rm_mathvariant">Remove mathvariant="normal"</label>
-<br />
-<input type="checkbox" id="correct_indent" name="correct_indent">
-<label for="correct_indent">Attempt to format summations that have top/bottom values? (Requires the document to have proper indentation)</label>
-<br />
-<br />
-<p>Paste the list of multi-character variables/functions in the mathml here, followed by a space and how to treat it, e.g.</p>
-<p>xyz m</p>
+<h4>HTML file</h4>
+<input id="html_file" type="file" /> <br/>
+<label for="html_file">This assumes proper source formatting (in Dreamweaver, Edit -> Code -> Apply Source Formatting) and consistent space encoding.</label>
+<h4>Variable list</h4>
+<p>Paste the list of multi-character variables/functions in the mathml here, each followed by a space and a character describing how to treat it, e.g.</p>
+<p>value v <br />
+max f <br />
+xyz m <br />
+ij c <br />
+HTML a</p>
 <p>The following are ways to treat the multi-character word:
 <ul>
   <li>v - the word represents a single multi-character variable.</li>
@@ -25,14 +24,19 @@
   <li>c - the word represents several variables listed side-by-side.</li>
   <li>a - the word represents a single multi-character acronym (currently treated the same way as v).</li>
 </ul>
-Separate by newline.
-</p>
+Separate values by newline.</p>
+<p>A detailed explanation of what this list is for can be found in the <a rel="external" href="https://commwebteam.github.io/mathml_formatter/">readme</a>.</p>
 <textarea id="multichar" rows="10" cols="100"></textarea>
+<br />
+<h4>Other options</h4>
+<input type="checkbox" id="rm_mathvariant" name="rm_mathvariant" checked>
+<label for="rm_mathvariant">Remove mathvariant="normal"</label>
+<br />
+<input type="checkbox" id="correct_indent" name="correct_indent">
+<label for="correct_indent">Attempt to format summations that have top/bottom values? (Requires the document to have proper indentation)</label>
 <br />
 <br />
 <button onclick="format_mathml()">Fix mathml paste</button>
-<p>This tool joins mi, mo, and mn tags according to the list provided above. It also removes the extra text in mathml tags that Word generates, e.g. "mml:". It may be helpful to use in conjunction with the <a rel="external" href="https://github.com/CommWebTeam/vba#mathml-macro">vba script to extract mathml in a Word document</a>, and the <a rel="external" href="https://commwebteam.github.io/gen_dw_format/dreamweaver_paste_formatter/dw_paste_format.html">general Dreamweaver paste formatting tool</a> to convert the fake tags created by the vba script into actual math tags.</p>
-<p>It assumes proper source formatting (in Dreamweaver, Edit -> Code -> Apply Source Formatting) and consistent space encoding.</p>
 <p>More in-depth information can be found in the <a rel="external" href="https://commwebteam.github.io/mathml_formatter/">readme</a>.</p>
 <script src="https://commwebteam.github.io/gen_dw_format/download.js"></script>
 <script src="https://commwebteam.github.io/gen_dw_format/format_helpers.js"></script>

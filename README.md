@@ -12,7 +12,7 @@ If the option is checked, it also removes the *mathvariant="normal"* attribute (
 
 This tool assumes consistent space encoding (dealt with in the [general Dreamweaver paste formatting tool](https://commwebteam.github.io/gen_dw_format/dreamweaver_paste_formatter/dw_paste_format.html)).
 
-## Variable list formatting
+## How to format the variable list
 The list of side-by-side variables should be line-separated. Each line should consist of the variable name(s), followed by a space and then a single character of v, f, m, c, or a.
 
 The single character indicates how the variable(s) should be treated:
@@ -81,7 +81,9 @@ and the MathML would look like so:
 
 ### Variable list priority
 
-Variables/functions/acronyms are checked after multiplication/commas. This is find if a multicharacter variable is multiplied by another variable. Within these two groups, strings are sorted by length in descending order.
+Variables/functions/acronyms are checked after multiplication/commas. This way, multi-character variables/functions/acronyms can find and join their individual characters if any subwords have previously been multiplied or comma-listed.
+
+Within these two groups, strings are sorted by length in descending order. This is so that smaller subwords being joined do not prevent a search for longer parent words later on. For example, if "sub v" was joined before "subword v", then the string of &lt;mi tags consisting of s, then u, then b would be joined into one &lt;mi tag of "sub". The tool would not be able to find a string of &lt;mi tags consisting of s, then u, then b, then w, then o, then r, then d. Note that you may still run into issues with subwords being joined first if you have run the tool multiple times with different variable lists.
 
 #### Example
 Given the following list:
@@ -100,12 +102,13 @@ This will be sorted into
 
 *ab f*
 
+The tool will perform the following steps in the given order:
 1. `&it;` will be inserted between all `<mi>` tags that consecutive contain c, then d, then e, then f.
 2. All consecutive mi tags containing c, then d, then e (including those that have `&it;` between) are joined into `<mi>cde</mi>`. 
 3. All consecutive mi tags containing a then b are joined into `<mi>ab</mi>` and are followed by `&af;`.
 
-## Summation formatting
-If the option is checked, the tool will also attempt to adjust summations that have top/bottom values so that their text is above/below the summation symbol rather than to the right. It also adds padding around `<munder>` and `<munderover>`.
+## Formatting summations
+If the option for "Attempt to format summations that have top/bottom values?" is checked, the tool will also attempt to adjust summations that have top/bottom values so that their text is above/below the summation symbol rather than to the right. It also adds padding around `<munder>` and `<munderover>`.
 
 The current padding added around rows is
 - height="+2ex" voffset="1ex" for the summation itself;
@@ -115,6 +118,102 @@ The current padding added around rows is
 You can adjust these values in the format_summations() function in mathml_helpers.js.
 
 The tool searches for summations using the keyword `<mo stretchy="false">`, then looks for the next mrow tags that have the same indentation as the keyword to add the padding around. Since it matches opening and closing tags based on them having the same indentation, it requires proper HTML indentation (you can apply this in Dreamweaver through Edit -> Code -> Apply Source Formatting).
+
+For example, this MathML code for a summation has a bottom value:
+
+```
+<math>
+  <mrow>
+    <munder>
+      <mo stretchy="false">∑</mo>
+      <mrow>
+        <mi>b</mi>
+      </mrow>
+    </munder>
+    <mrow>
+      <mi>x</mi>
+      <mi>y</mi>
+      <mi>z</mi>
+    </mrow>
+  </mrow>
+</math>
+```
+
+It is changed to the following:
+
+```
+<math>
+  <mrow>
+    <mpadded height="+2ex" voffset="1ex">
+      <munder>
+        <mo stretchy="false">∑</mo>
+        <mrow>
+          <mpadded lspace="-0.7em" voffset="-1ex">
+            <mi>b</mi>
+          </mpadded>
+        </mrow>
+      </munder>
+    </mpadded>
+    <mrow>
+      <mi>x</mi>
+      <mi>y</mi>
+      <mi>z</mi>
+    </mrow>
+  </mrow>
+</math>
+```
+
+This MathML code for a summation has both a top and a bottom value:
+
+```
+<math>
+  <mrow>
+    <munderover>
+      <mo stretchy="false">∑</mo>
+      <mrow>
+        <mi>b</mi>
+      </mrow>
+      <mrow>
+        <mi>c</mi>
+      </mrow>
+    </munderover>
+    <mrow>
+      <mi>a</mi>
+    </mrow>
+  </mrow>
+  <mi>b</mi>
+  <mi>c</mi>
+</math>
+```
+
+It is changed to the following:
+
+```
+<math>
+  <mrow>
+    <mpadded height="+2ex" voffset="1ex">
+      <munderover>
+        <mo stretchy="false">∑</mo>
+        <mrow>
+          <mpadded lspace="-0.7em" voffset="-1ex">
+            <mi>b</mi>
+          </mpadded>
+        </mrow>
+        <mrow>
+          <mpadded lspace="-0.7em" voffset="1ex">
+            <mi>c</mi>
+          </mpadded>
+        </mrow>
+      </munderover>
+    </mpadded>
+    <mrow>
+      <mi>a</mi>
+    </mrow>
+  </mrow>
+  <mi>b</mi>
+  <mi>c</mi>
+</math>
+```
 
 # Working with MathML when converting Word documents
 

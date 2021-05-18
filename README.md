@@ -43,39 +43,46 @@ We can see that
 - ij consists of two variables listed side-by-side.
 
 So the list would consist of
-- max f
-- alpha v
-- ab m
-- ij c
+```
+max f
+alpha v
+ab m
+ij c
+```
 
 and the MathML would look like so:
 
 ```
 <math>
+  <mrow>
     <mrow>
-        <mrow>
-            <mi>max</mi>
-            <mo>&af;</mo>
-        </mrow>
-        <mrow>
-            <mfenced separators="|">
-                <mrow>
-                    <mi>alpha</mi>
-                </mrow>
-            </mfenced>
-        </mrow>
+      <mi>max</mi>
+      <mo>&af;</mo>
     </mrow>
-    <mo>=</mo>
-    <msub>
+    <mo>⁡</mo>
+    <mrow>
+      <mfenced separators="|">
         <mrow>
-            <mi>c</mi>
+          <mi>alpha</mi>
         </mrow>
-        <mrow>
-            <mi>i</mi>
-            <mo>&ic;</mo>
-            <mi>j</mi>
-        </mrow>
-    </msub>
+      </mfenced>
+    </mrow>
+  </mrow>
+  <mo>=</mo>
+  <mi>a</mi>
+  <mo>&it;</mo>
+  <mi>b</mi>
+  <mo>-</mo>
+  <msub>
+    <mrow>
+      <mi>c</mi>
+    </mrow>
+    <mrow>
+      <mi>i</mi>
+      <mo>&ic;</mo>
+      <mi>j</mi>
+    </mrow>
+  </msub>
 </math>
 ```
 

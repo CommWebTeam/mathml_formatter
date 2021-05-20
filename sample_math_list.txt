@@ -1,7 +1,7 @@
 abc v     
      def a 
 Mathvariant v
-ghi jkl×2
+ghi jkl×2 f
 word v
 Nestedword c
 xyz m
@@ -9,4 +9,7 @@ max f
 alpha v
 ab m
 ij c
+super v
+sub m
+both c
 &Delta;value* v

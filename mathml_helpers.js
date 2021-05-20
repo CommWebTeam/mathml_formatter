@@ -43,10 +43,16 @@ function format_mathml() {
 
 /* helper functions */
 
+/*
+============================
+Padding
+============================
+*/
+
 // add padding around mrow which has input regex, including indentation as its first group and remaining content as second
 function add_mrow_padding(mathml_html, input_regex) {
 	let padded_html = mathml_html;
-	// each value in matches is an array where index 0 is the full match, index 1 is the munder(over) before the summation, index 2 is the indentation before the summation, index 3 is the full summation, index 4 is the values inside the summation
+	// each value in matches is a subarray where index 0 is the full match of the regex string, index 1 is the munder(over) before the summation, index 2 is the indentation before the summation, index 3 is the full summation, index 4 is the values inside the summation
 	let matches = [...padded_html.matchAll(input_regex)];
 	for (let i = 0; i < matches.length; i++) {
 		// get closing mrow of text (based on having same indentation as input line)
@@ -75,7 +81,13 @@ function format_summations(mathml_text) {
 	return edited_html;
 }
 
-// assign type priorities so that joining variables (a/v/f) is done after adding separators (m/c), since joining variables takes priority
+/*
+============================
+Joining variables
+============================
+*/
+
+// helper function for sorting - assign type priorities so that joining variables (a/v/f) is done after adding separators (m/c), since joining variables takes priority
 function type_prio(x) {
 	if ((x.type === "m") || (x.type === "c")) {
 		return 0;
@@ -85,7 +97,7 @@ function type_prio(x) {
 	}
 }
 
-// sort to deal with longer words first, so that shorter words being joined earlier doesn't prevent longer words from being recognized later
+// sort to deal with longer words first within the same type priority, so that shorter words being joined earlier doesn't prevent longer words from being recognized later
 function sort_words(a, b) {
 	// if two words are treated the same, sort by length in reverse
 	if (type_prio(a) === type_prio(b)) {
@@ -102,7 +114,7 @@ function join_multichar_mi(mathml_text, multichar_list) {
 	Create list of words to be joined
 	============================
 	*/
-	// get list of objects containing word value and type of word
+	// get list of objects containing two properties: word value and type of word
 	let word_arr = [];
 	for (i = 0; i < multichar_list.length; i++) {
 		let multichar_word = multichar_list[i].trim();
@@ -151,46 +163,48 @@ function join_multichar_mi(mathml_text, multichar_list) {
 		Create regex statements to search for m[ion] tags to join
 		============================
 		*/
-		// join characters with regex for <mi> and invisible tags to find instances
+		// join character array, with with <m[ion]> and invisible tags in between each character, into string
 		let mi_split_str = "(?:" + mi_close + mo_invis_nattr + space + mi_open_nattr + ")*";
 		let mi_regex = new RegExp(mi_open + multichar_arr.join(mi_split_str) + mi_close, "g");
-		// for multi-char, also look for instances where the last character contains a superscript/subscript
+		// also look for instances where the last character contains a superscript/subscript
 		let main_char_regex = mi_open + multichar_arr.slice(0, multichar_arr.length - 1).join(mi_split_str);
-		let last_char_regex = mi_close + space + '(<msubsup>)' + space + '<mrow>' + space + mi_open_nattr + multichar_arr[multichar_arr.length - 1] + mi_close + space + '</mrow>';
+		let last_char_regex = mi_close + space + '((?:<msubsup>)|(?:<msub>)|(?:<msup>))' + space + '<mrow>' + space + mi_open_nattr + multichar_arr[multichar_arr.length - 1] + mi_close + space + '</mrow>';
 		let mi_script_regex = new RegExp(main_char_regex + last_char_regex, "g");
-		// set replacement values for multi-char
-		let mi_replace = "<mi$1>" + curr_word.val + "</mi>";
-		let mi_script_replace = "$2<mrow>" + mi_replace + "</mrow>";
 		/*
 		============================
 		Join m[ion] tags
 		============================
 		*/
+		// set replacement values for multi-char words (v, a, f)
+		let mi_multichar_replace = "<mi$1>" + curr_word.val + "</mi>";
+		let mi_multichar_script_replace = "$2<mrow>" + mi_multichar_replace + "</mrow>";
 		// multiplication
 		if (curr_word.type === "m") {
 			// add invisible multiplication between variables
-			let var_mult = multichar_arr.join("</mi><mo>&it;</mo><mi>");
-			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, "<mi>" + var_mult + "</mi>");
+			let var_mult = "<mi>" + multichar_arr.join("</mi><mo>&it;</mo><mi>") + "</mi>";
+			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, var_mult);
+			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_script_regex, "$2<mrow>" + var_mult + "</mrow>");
 		}
 		// comma
 		else if (curr_word.type === "c") {
 			// add invisible comma between variables
-			let var_comma = multichar_arr.join("</mi><mo>&ic;</mo><mi>");
-			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, "<mi>" + var_comma + "</mi>");
+			let var_comma = "<mi>" +  multichar_arr.join("</mi><mo>&ic;</mo><mi>")+ "</mi>";
+			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, var_comma);
+			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_script_regex, "$2<mrow>" + var_comma + "</mrow>");
 		}
 		// variable
 		else if (curr_word.type === "v" || curr_word.type === "a") {
 			// join consecutive mi/mo/mn tags
-			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, mi_replace);
-			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_script_regex, mi_script_replace);
+			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, mi_multichar_replace);
+			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_script_regex, mi_multichar_script_replace);
 		}
 		// function
 		else if (curr_word.type === "f") {
 			// add string for invisible function application
 			let invis_func = "<mo>&af;</mo>";
 			// join consecutive mi/mo/mn tags
-			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, mi_replace + invis_func);
-			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_script_regex, mi_script_replace + invis_func);
+			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_regex, mi_multichar_replace + invis_func);
+			multichar_mathml_text = multichar_mathml_text.replaceAll(mi_script_regex, mi_multichar_script_replace + invis_func);
 		}
 	}
 	// remove consecutive instances of invisible function
